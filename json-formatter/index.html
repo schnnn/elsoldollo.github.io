@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 1500px;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .panel-icon {
+            font-size: 2.5em;
+        }
+
+        .panel-title {
+            font-size: 1.8em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #e8e8e8;
+            border-radius: 15px;
+            font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            resize: none;
+            color: #333;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #999;
+        }
+
+        .output-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .output-box {
+            flex: 1;
+            background: #1e1e1e;
+            border-radius: 15px;
+            padding: 25px;
+            font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #d4d4d4;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 2px solid #333;
+            margin-bottom: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .output-box.error {
+            background: #3a2a2a;
+            color: #ff6b6b;
+            border-color: #8b4545;
+        }
+
+        .output-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output-box::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .output-box::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .output-box::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-copy {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-copy.copied {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            opacity: 0.9;
+            margin-top: 40px;
+            font-size: 0.95em;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 1200px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            header h1 {
+                font-size: 2.3em;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 15px; }
+            header h1 { font-size: 1.8em; }
+            .panel { padding: 25px; }
+            .button-group { flex-direction: column; }
+            .stats-grid { grid-template-columns: 1fr; }
+            header { margin-bottom: 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <h1>📋 JSON Formatter</h1>
+            <p>아름답고 강력한 JSON 변환 도구</p>
+        </header>
+
+        <div class="content">
+            <!-- 입력 패널 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-icon">📥</div>
+                    <div class="panel-title">입력</div>
+                </div>
+                <textarea id="input" placeholder="JSON 또는 JavaScript 객체를 붙여넣으세요...
+
+예:
+{
+  name: &quot;John&quot;,
+  age: 30,
+  city: &quot;Seoul&quot;
+}"></textarea>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="formatJSON()">✨ 포맷하기</button>
+                    <button class="btn-secondary" onclick="clearAll()">🗑️ 초기화</button>
+                </div>
+            </div>
+
+            <!-- 출력 패널 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-icon">📤</div>
+                    <div class="panel-title">출력</div>
+                </div>
+
+                <div id="message" class="message"></div>
+
+                <div class="stats-grid" id="stats" style="display: none;">
+                    <div class="stat">
+                        <div class="stat-value" id="size">0</div>
+                        <div class="stat-label">파일 크기</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="keys">0</div>
+                        <div class="stat-label">키 개수</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="lines">0</div>
+                        <div class="stat-label">줄 수</div>
+                    </div>
+                </div>
+
+                <div class="output-box" id="output">포맷한 JSON이 여기 표시됩니다</div>
+                <button class="btn-copy" onclick="copyOutput()">📋 복사하기</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 JSON과 JavaScript 객체 형식 모두 지원합니다</p>
+            <p>🔒 모든 처리는 브라우저에서만 진행되며 서버로 전송되지 않습니다</p>
+        </footer>
+    </div>
+
+    <script>
+        function formatJSON() {
+            const input = document.getElementById('input').value;
+            const output = document.getElementById('output');
+            const message = document.getElementById('message');
+            const stats = document.getElementById('stats');
+
+            try {
+                let obj;
+
+                try {
+                    obj = JSON.parse(input);
+                } catch (e1) {
+                    try {
+                        obj = new Function('return (' + input + ')')();
+                    } catch (e2) {
+                        let fixed = input;
+                        fixed = fixed.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+                        fixed = fixed.replace(/:\s*(http[^\s,}\]]*)/g, ': "$1"');
+                        obj = JSON.parse(fixed);
+                    }
+                }
+
+                const result = JSON.stringify(obj, null, 2);
+                output.textContent = result;
+                output.className = 'output-box';
+
+                // 메시지 표시
+                message.textContent = '✓ JSON이 성공적으로 변환되었습니다!';
+                message.className = 'message success show';
+                setTimeout(() => message.classList.remove('show'), 3000);
+
+                // 통계 업데이트
+                document.getElementById('size').textContent = formatBytes(result.length);
+                document.getElementById('keys').textContent = countKeys(obj);
+                document.getElementById('lines').textContent = result.split('\n').length;
+                stats.style.display = 'grid';
+
+            } catch (err) {
+                output.textContent = '❌ 오류: ' + err.message;
+                output.className = 'output-box error';
+                message.textContent = err.message;
+                message.className = 'message error show';
+                stats.style.display = 'none';
+            }
+        }
+
+        function countKeys(obj) {
+            let count = 0;
+            const traverse = (o) => {
+                if (typeof o === 'object' && o !== null) {
+                    if (Array.isArray(o)) {
+                        o.forEach(traverse);
+                    } else {
+                        count += Object.keys(o).length;
+                        Object.values(o).forEach(traverse);
+                    }
+                }
+            };
+            traverse(obj);
+            return count;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('output');
+            const text = output.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const original = btn.textContent;
+                btn.textContent = '✓ 복사됨!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                alert('복사에 실패했습니다');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').textContent = '포맷한 JSON이 여기 표시됩니다';
+            document.getElementById('output').className = 'output-box';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('message').classList.remove('show');
+            document.getElementById('input').focus();
+        }
+
+        // 페이지 로드 시 샘플 데이터
+        window.addEventListener('load', function() {
+            document.getElementById('input').value = ``;
+        });
+    </script>
+</body>
+</html>
