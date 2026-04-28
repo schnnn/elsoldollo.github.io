@@ -232,19 +232,6 @@
         .ball.ball-3 { background: linear-gradient(135deg, #ffd93d 0%, #ffb82e 100%); }
         .ball.ball-4 { background: linear-gradient(135deg, #52c41a 0%, #45a049 100%); }
         .ball.ball-5 { background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%); }
-        .ball.ball-6 { background: linear-gradient(135deg, #722ed1 0%, #531dab 100%); }
-
-        .bonus-separator {
-            font-weight: 700;
-            color: #ff6b6b;
-            font-size: 1.5rem;
-        }
-
-        .bonus-label {
-            font-size: 0.85rem;
-            color: #999;
-            margin: 0 0.3rem;
-        }
 
         .copy-btn-set {
             display: flex;
@@ -430,8 +417,8 @@
 
         <div class="content">
             <div class="info-box">
-                📌 <strong>로또 6/45 규칙:</strong> 1~45 범위에서 5개 번호 추출 + 보너스 1개<br>
-                당첨 확률: 1등(1,000만분의 1), 2등(약 727만분의 1), 3등(약 36만분의 1), 4등(약 1,182분의 1), 5등(약 45분의 1)
+                📌 <strong>로또 6/45 규칙:</strong> 1~45 범위에서 6개 번호 추출<br>
+                당첨 확률: 1등(약 814만분의 1), 2등(약 135만분의 1), 3등(약 3만5천분의 1), 4등(약 733분의 1), 5등(약 45분의 1)
             </div>
 
             <div class="control-panel">
@@ -477,20 +464,13 @@
                     numbers.add(Math.floor(Math.random() * 45) + 1);
                 }
 
-                const allNumbers = Array.from(numbers).sort((a, b) => a - b);
-                // 마지막 1개가 보너스 번호
-                const regularNumbers = allNumbers.slice(0, 5);
-                const bonus = allNumbers[5];
-
                 lottoSets.push({
-                    numbers: regularNumbers,
-                    bonus: bonus,
+                    numbers: Array.from(numbers).sort((a, b) => a - b),
                     timestamp: new Date()
                 });
             }
 
             renderResults();
-
         }
 
         function renderResults() {
@@ -519,9 +499,6 @@
                     </div>
                     <div class="numbers-display">
                         ${set.numbers.map(num => `<div class="ball ${getNumberColor(num)}">${String(num).padStart(2, '0')}</div>`).join('')}
-                        <div class="bonus-separator">+</div>
-                        <div class="bonus-label">보너스</div>
-                        <div class="ball ball-6">${String(set.bonus).padStart(2, '0')}</div>
                     </div>
                     <div class="copy-btn-set">
                         <button class="btn-copy" onclick="copySet(${index})" style="padding: 6px 12px; font-size: 0.9rem;">📋 복사</button>
@@ -535,15 +512,12 @@
 
         function copySet(index) {
             const set = lottoSets[index];
-            const text = set.numbers.join(', ') + ' + ' + set.bonus;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('복사되었습니다!');
-            });
+            navigator.clipboard.writeText(set.numbers.join(', '));
         }
 
         function copyAllNumbers() {
             const text = lottoSets.map((set, i) =>
-                `${i + 1}번: ${set.numbers.join(', ')} + ${set.bonus}`
+                `${i + 1}번: ${set.numbers.join(', ')}`
             ).join('\n');
             navigator.clipboard.writeText(text).then(() => {
                 alert('모든 번호가 복사되었습니다!');
